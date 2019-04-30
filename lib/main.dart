@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:vector_math/vector_math.dart' show radians;
 
 Future<void> main() async {
   final FirebaseApp app = await FirebaseApp.configure(
@@ -74,8 +76,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
       ),
     ));
     _translateButton = Tween<double>(
-      begin: _fabHeight,
-      end: -14.0,
+      begin: 80,
+      end: 0,
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Interval(
@@ -145,6 +147,19 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
       ),
     );
   }
+
+  _buildButton(double angle, {Color color, IconData icon}) {
+      final double rad = radians(angle);
+      return Transform(
+        transform: Matrix4.identity()..translate(
+          (_translateButton.value) * cos(rad), 
+          (_translateButton.value) * sin(rad)
+        ),
+
+        child: FloatingActionButton(
+          child: Icon(icon), backgroundColor: color, onPressed: (){}, elevation: 0)
+      );
+    }
   
   // load data from Firebase
   Future<void> loadData() async{
@@ -240,40 +255,14 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
               markers: _markers,
               onCameraMove: _onCameraMove,
             ),
+            _buildButton(0, color: Colors.red),
+            _buildButton(45, color: Colors.orange),
+            _buildButton(90, color: Colors.black),
+            toggle(),
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Align(
                 alignment: Alignment.bottomRight,
-                child: Column(
-                  children: <Widget>[
-                  SizedBox(height: 460),
-                  Transform(
-                    transform: Matrix4.translationValues(
-                      0.0,
-                      _translateButton.value * 3.0,
-                      0.0,
-                    ),
-                    child: add(),
-                  ),
-                  Transform(
-                    transform: Matrix4.translationValues(
-                      0.0,
-                      _translateButton.value * 2.0,
-                      0.0,
-                    ),
-                    child: image(),
-                  ),
-                  Transform(
-                    transform: Matrix4.translationValues(
-                      0.0,
-                      _translateButton.value,
-                      0.0,
-                    ),
-                    child: inbox(),
-                  ),
-                  toggle(),
-                  ],
-                ),
               ),
             )
           ],

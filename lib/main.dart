@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vector_math/vector_math.dart' show radians;
+import 'package:location/location.dart';
 
 Future<void> main() async {
   final FirebaseApp app = await FirebaseApp.configure(
@@ -38,9 +39,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
 
   static const LatLng _center = const LatLng(45.521563, -122.677433);
   static const LatLng ANU = const LatLng(-35.2777, 149.1185);
+  double latitude;
+  double longitude;
   final Set<Marker> _markers = {};
   LatLng _lastMapPosition = _center;
   final List<userPosition> userPositions = [];
+  String currentUserName = "User_Push";
  
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
@@ -155,9 +159,12 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
           (_translateButton.value) * cos(rad), 
           (_translateButton.value) * sin(rad)
         ),
-
         child: FloatingActionButton(
-          child: Icon(icon), backgroundColor: color, onPressed: (){}, elevation: 0)
+          child: Icon(icon), 
+          backgroundColor: color, 
+          onPressed: (){}, 
+          elevation: 0
+          )
       );
     }
   
@@ -183,7 +190,34 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
       );
   }
 
+  void get_location(){
+    var location = new Location();
+    location.onLocationChanged().listen((LocationData currentLocation) {
+      latitude = currentLocation.latitude;
+      longitude = currentLocation.longitude;
+    });
+  }
+
+
+  int count = 0;
+  void pushLocation(double latitude, double longitude){
+    if (count == 0){
+    var db = Firestore.instance;
+    db.collection('User_Location').add({
+      'name': "User_push",
+      'location': GeoPoint(latitude, longitude),
+      'interest': ['Hi'],
+    }).then((val){
+      print("success");
+    }).catchError((err) {
+      print(err);
+    });
+    count++;
+  }
+  }
+
   void addMarker(String name, LatLng pos, List interest){
+    if (name != currentUserName){
     setState(() {
       Marker markerChangeName = getMarkerByPos(pos);
       Marker markerChangePosition = getMarkerByName(name);
@@ -201,6 +235,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
         icon: BitmapDescriptor.fromAsset("assets/orange.png")
       ));
     });
+    }
   }
 
   Marker getMarkerByPos(LatLng pos){
@@ -230,6 +265,9 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
+    get_location();
+    if ((longitude != null) & (latitude != null))
+      pushLocation(latitude, longitude);
     loadData();
     return MaterialApp(
       home: Scaffold(
@@ -240,6 +278,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
           ),
         ),
         body: Stack(
+          alignment: Alignment.bottomRight,
           children: <Widget>[
             GoogleMap(
               onMapCreated: _onMapCreated,
@@ -255,18 +294,13 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
               markers: _markers,
               onCameraMove: _onCameraMove,
             ),
-            _buildButton(0, color: Colors.red),
-            _buildButton(45, color: Colors.orange),
-            _buildButton(90, color: Colors.black),
+            _buildButton(180, color: Colors.red),
+            _buildButton(225, color: Colors.orange),
+            _buildButton(-90, color: Colors.black),
             toggle(),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Align(
-                alignment: Alignment.bottomRight,
-              ),
-            )
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }

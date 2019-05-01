@@ -21,8 +21,8 @@ dependencies:
     sdk: flutter
   google_maps_flutter: ^0.4.0
   firebase_core: 
-  cloud_firestore: 
-  location: 
+  cloud_firestore:
+  location: ^2.3.5
   # geoflutterfire: ^2.0.3+2
   #   git: https://github.com/felipecesar42/GeoFlutterFire.git
   # The following adds the Cupertino Icons font to your application.

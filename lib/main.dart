@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
   final Set<Marker> _markers = {};
   LatLng _lastMapPosition = _center;
   final List<userPosition> userPositions = [];
-  String currentUserName = "User_push";
+  String currentUserName = "Uwe";
  
   void _onMapCreated(GoogleMapController controller) {
     _controller.complete(controller);
@@ -108,36 +108,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
     isOpened = !isOpened;
   }
 
-  Widget add() {
-    return Container(
-      child: FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Add',
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget image() {
-    return Container(
-      child: FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Image',
-        child: Icon(Icons.image),
-      ),
-    );
-  }
-
-  Widget inbox() {
-    return Container(
-      child: FloatingActionButton(
-        onPressed: null,
-        tooltip: 'Inbox',
-        child: Icon(Icons.inbox),
-      ),
-    );
-  }
-
   Widget toggle() {
     return Container(
       child: FloatingActionButton(
@@ -145,7 +115,7 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
         onPressed: animate,
         tooltip: 'Toggle',
         child: AnimatedIcon(
-          icon: AnimatedIcons.menu_close,
+          icon: AnimatedIcons.home_menu,
           progress: _animateIcon,
         ),
       ),
@@ -168,7 +138,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
       );
     }
   
-  String currentDocumentId;
   // load data from Firebase
   Future<void> loadData() async{
     double lat;
@@ -176,7 +145,6 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
     String name;
     List interest;
     userPosition up;
-    String id;
     QuerySnapshot sn = await Firestore.instance.collection('User_Location').getDocuments();
     var list = sn.documents;
     list.forEach((DocumentSnapshot ds) => {
@@ -184,13 +152,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
       lat = ds.data['location'].latitude,
       lng = ds.data['location'].longitude,
       interest = ds.data['interest'],
-      id = ds.documentID,
       getNewPosition(lat, lng),
       up = new userPosition(_lastMapPosition, name, interest),
       addUsers(up),
-      // getCurrentUserFileId(name, ds),
-      // updateCurrentLocation(name),
-      print(ds.documentID),
+      updateCurrentLocation(name, ds.documentID),
+      print(name),
       addMarker(name, _lastMapPosition, interest)
       }
       );
@@ -207,11 +173,11 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
 
 
   int count = 0;
-  void pushLocation(double latitude, double longitude){
+  Future<void> pushLocation(double latitude, double longitude) async{
     if (count == 0){
       var db = Firestore.instance;
-      db.collection('User_Location').add({
-        'name': "User_push",
+      await db.collection('User_Location').add({
+        'name': currentUserName,
         'location': GeoPoint(latitude, longitude),
         'interest': ['Hi'],
       }).then((val){
@@ -220,25 +186,18 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
         print(err);
       });
       count++;
-  }
-  }
+    }
+    }
 
-  void updateCurrentLocation(String name){
-    if ((currentUserName == name) & (currentDocumentId != null)){
+  Future<void> updateCurrentLocation(String name, String id) async{
+    if ((currentUserName == name) & (id != null)){
       var db = Firestore.instance;
       if ((latitude != null) & (longitude != null)) {
-        db.collection("User_Location").document(currentDocumentId).updateData({
+        await db.collection("User_Location").document(id).updateData({
           'location': GeoPoint(latitude, longitude)
         });
-        print(currentDocumentId);
         print("updateSuccesss");
       }
-    }
-  }
-
-  void getCurrentUserFileId(String name, String id) {
-    if (name == currentUserName) {
-      currentDocumentId = id;
     }
   }
 
@@ -292,8 +251,8 @@ class _MyAppState extends State<MyApp> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     get_location();
-    // if ((longitude != null) & (latitude != null))
-    //   pushLocation(latitude, longitude);
+    if ((longitude != null) & (latitude != null) & (count == 0))
+      pushLocation(latitude, longitude);
     loadData();
     return MaterialApp(
       home: Scaffold(

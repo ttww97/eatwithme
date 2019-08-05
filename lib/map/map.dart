@@ -67,7 +67,7 @@ class _MyAppState extends State<MyMap> with TickerProviderStateMixin{
   
   // load data from Firebase
   Future<void> loadData() async{
-    pushLocation(latitude, longitude);
+    // pushLocation(latitude, longitude);
     double lat;
     double lng;
     String name;
@@ -104,21 +104,21 @@ class _MyAppState extends State<MyMap> with TickerProviderStateMixin{
 
   // Create a document to put user's name, user's interests
   // and user's location in 
-  Future<void> pushLocation(double latitude, double longitude) async{
-    if (!alreadyPushed){
-      var db = Firestore.instance;
-      await db.collection('Users').add({
-        'displayName': currentUserName,
-        'location': GeoPoint(latitude, longitude),
-        'interests': ['Hi', 'gogo'],
-      }).then((val){
-        print("Pushed success");
-      }).catchError((err) {
-        print(err);
-      });
-      alreadyPushed = true;
-    }
-    }
+  // Future<void> pushLocation(double latitude, double longitude) async{
+  //   if (!alreadyPushed){
+  //     var db = Firestore.instance;
+  //     await db.collection('Users').add({
+  //       'displayName': currentUserName,
+  //       'location': GeoPoint(latitude, longitude),
+  //       'interests': ['Hi', 'gogo'],
+  //     }).then((val){
+  //       print("Pushed success");
+  //     }).catchError((err) {
+  //       print(err);
+  //     });
+  //     alreadyPushed = true;
+  //   }
+  //   }
 
   // update user's location in the firebase when the user moves
   Future<void> updateCurrentLocation(String name, String id) async{
@@ -236,7 +236,7 @@ class _MyAppState extends State<MyMap> with TickerProviderStateMixin{
   Widget build(BuildContext context) {
     set_state();
     get_location();
-    pushLocation(latitude, longitude);
+    // pushLocation(latitude, longitude);
     loadData();
     return MaterialApp(
       home: Scaffold(

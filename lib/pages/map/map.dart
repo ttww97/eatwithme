@@ -36,7 +36,7 @@ class _MyAppState extends State<MyMap> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); 
     _controllerUserProfile.addStream(_firestore
         .collection('Users')
         .document(authService.currentUid)
